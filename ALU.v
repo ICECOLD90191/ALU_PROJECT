@@ -77,7 +77,7 @@ always @(posedge CLK or posedge RST) begin
         if (count == 1) begin
         if (MODE_TEMP) begin
             case (CMD_TEMP)
-                4'd0: begin
+                4'd0: begin //ADD
                 if (VALID_TEMP == 2'b11) begin
                     RES   <= OPA_TEMP + OPB_TEMP;
                     COUT  <= ({1'b0, OPA_TEMP} + {1'b0, OPB_TEMP}) >> N;
@@ -85,7 +85,7 @@ always @(posedge CLK or posedge RST) begin
                     {ERR, G, L, E} <= 4'b0000;
                 end else ERR <= 1'b1;
                 end
-                4'd1: begin 
+                4'd1: begin //SUB
                     if (VALID_TEMP == 2'b11) begin
                         RES   <= OPA_TEMP - OPB_TEMP;
                         COUT  <= 1'b0;
@@ -93,7 +93,7 @@ always @(posedge CLK or posedge RST) begin
                         {ERR, G, L, E} <= 4'b0000;
                     end else ERR <= 1'b1;
                 end
-                4'd2: begin 
+                4'd2: begin  //ADD_CIN
                     if (VALID_TEMP == 2'b11) begin
                         RES   <= OPA_TEMP + OPB_TEMP + CIN_TEMP;
                         COUT  <= ({1'b0, OPA_TEMP} + {1'b0, OPB_TEMP} + CIN_TEMP) >> N;
@@ -101,7 +101,7 @@ always @(posedge CLK or posedge RST) begin
                         {ERR, G, L, E} <= 4'b0000;
                     end else ERR <= 1'b1;
                 end
-                4'd3: begin 
+                4'd3: begin  //SUB_CIN
                     if (VALID_TEMP == 2'b11) begin
                         RES   <= OPA_TEMP - OPB_TEMP - CIN_TEMP;
                         COUT  <= 1'b0;
@@ -109,7 +109,7 @@ always @(posedge CLK or posedge RST) begin
                         {ERR, G, L, E} <= 4'b0000;
                     end else ERR <= 1'b1;
                 end
-                4'd4: begin 
+                4'd4: begin  //INC_A
                 if (VALID_TEMP[0]) begin
                     RES   <= OPA_TEMP + 1'b1;
                     COUT  <= ({1'b0, OPA_TEMP} + 1'b1) >> N;
@@ -117,7 +117,7 @@ always @(posedge CLK or posedge RST) begin
                     {ERR, G, L, E} <= 4'b0000;
                 end else ERR <= 1'b1;
                 end
-                4'd5: begin 
+                4'd5: begin  //DEC_A
                 if (VALID_TEMP[0]) begin
                     RES   <= OPA_TEMP - 1'b1;
                     COUT  <= 1'b0;
@@ -125,7 +125,7 @@ always @(posedge CLK or posedge RST) begin
                     {ERR, G, L, E} <= 4'b0000;
                 end else ERR <= 1'b1;
                 end
-                4'd6: begin 
+                4'd6: begin  //INC_B
                     if (VALID_TEMP[1]) begin
                         RES   <= OPB_TEMP + 1'b1;
                         COUT  <= ({1'b0, OPB_TEMP} + 1'b1) >> N;
@@ -133,7 +133,7 @@ always @(posedge CLK or posedge RST) begin
                         {ERR, G, L, E} <= 4'b0000;
                     end else ERR <= 1'b1;
                 end
-                4'd7: begin 
+                4'd7: begin  //DEC_B
                 if (VALID_TEMP[1]) begin
                     RES   <= OPB_TEMP - 1'b1;
                     COUT  <= (OPB_TEMP == 0);
@@ -141,13 +141,13 @@ always @(posedge CLK or posedge RST) begin
                     {ERR, G, L, E} <= 4'b0000;
                 end else ERR <= 1'b1;
                 end
-                4'd8: begin 
+                4'd8: begin  //CMP
                     if (VALID_TEMP == 2'b11) begin
                         RES   <= 0;
                         {ERR, G, L, E} <= {1'b0, (OPA_TEMP > OPB_TEMP), (OPA_TEMP < OPB_TEMP), (OPA_TEMP == OPB_TEMP)};
                     end else ERR <= 1'b1;
                 end
-                4'd11: begin
+                4'd11: begin //SIGNED ADDITION
                     if (VALID_TEMP == 2'b11) begin
                         RES   <= $signed(OPA_TEMP) + $signed(OPB_TEMP);
                         OFLOW <= (OPA_TEMP[N-1] == OPB_TEMP[N-1]) && (signed_sum[N-1] != OPA_TEMP[N-1]);
@@ -157,7 +157,7 @@ always @(posedge CLK or posedge RST) begin
                         COUT <= ({1'b0, OPA_TEMP} + {1'b0, OPB_TEMP}) >> N;
                     end else ERR <= 1'b1;
                 end
-                4'd12: begin
+                4'd12: begin //SIGNED SUB
                     if (VALID_TEMP == 2'b11) begin
                         RES <= $signed(OPA_TEMP) - $signed(OPB_TEMP);
                         G <= $signed(OPA_TEMP) >  $signed(OPB_TEMP);
@@ -171,86 +171,86 @@ always @(posedge CLK or posedge RST) begin
             endcase
         end else begin
             case(CMD_TEMP)
-                4'd0: begin
+                4'd0: begin //AND
                     if(VALID_TEMP) begin
                         RES[N-1:0] <= (OPA_TEMP & OPB_TEMP);
                         {ERR,G,L,E,COUT,OFLOW} <= 6'b000000;
                     end else ERR <= 1'b1;
                 end
-                4'd1: begin
+                4'd1: begin //NAND
                     if(VALID_TEMP) begin
                         RES[N-1:0] <= ~(OPA_TEMP & OPB_TEMP);
                         {ERR,G,L,E,COUT,OFLOW} <= 6'b000000;
                     end else ERR <= 1'b1;
                 end
-                4'd2: begin
+                4'd2: begin //OR
                     if(VALID_TEMP) begin
                         RES[N-1:0] <= OPA_TEMP | OPB_TEMP;
                         {ERR,G,L,E,COUT,OFLOW} <= 6'b000000;
                     end else ERR <= 1'b1;
                 end
-                4'd3: begin
+                4'd3: begin //NOR
                     if(VALID_TEMP) begin
                         RES[N-1:0] <= ~(OPA_TEMP | OPB_TEMP);
                         {ERR,G,L,E,COUT,OFLOW} <= 6'b000000;
                     end else ERR <= 1'b1;
                 end
-                4'd4: begin
+                4'd4: begin //XOR
                     if(VALID_TEMP) begin
                         RES[N-1:0] <= OPA_TEMP ^ OPB_TEMP;
                         {ERR,G,L,E,COUT,OFLOW} <= 6'b000000;
                     end else ERR <= 1'b1;
                 end
-                4'd5: begin
+                4'd5: begin //XNOR
                     if(VALID_TEMP) begin
                         RES[N-1:0] <= ~(OPA_TEMP ^ OPB_TEMP);
                         {ERR,G,L,E,COUT,OFLOW} <= 6'b000000;
                     end else ERR <= 1'b1;
                 end
-                4'd6: begin
+                4'd6: begin //NOT_A
                     if(VALID_TEMP[0]) begin
                         RES[N-1:0] <= ~OPA_TEMP;
                         {ERR,G,L,E,COUT,OFLOW} <= 6'b000000;
                     end else ERR <= 1'b1;
                 end
-                4'd7: begin
+                4'd7: begin //NOT_B
                     if(VALID_TEMP[1]) begin
                         RES[N-1:0] <= ~OPB_TEMP;
                         {ERR,G,L,E,COUT,OFLOW} <= 6'b000000;
                     end else ERR <= 1'b1;
                 end
-                4'd8: begin
+                4'd8: begin //OPA>>1
                     if(VALID_TEMP[0]) begin
                         RES[N-1:0] <= OPA_TEMP >> 1;
                         {ERR,G,L,E,COUT,OFLOW} <= 6'b000000;
                     end else ERR <= 1'b1;
                 end
-                4'd9: begin
+                4'd9: begin //OPA<<1
                     if(VALID_TEMP[0]) begin
                         RES[N-1:0] <= OPA_TEMP << 1;
                         {ERR,G,L,E,COUT,OFLOW} <= 6'b000000;
                     end else ERR <= 1'b1;
                 end
-                4'd10: begin
+                4'd10: begin //OPB>>1
                     if(VALID_TEMP[1]) begin
                         RES[N-1:0] <= OPB_TEMP >> 1;
                         {ERR,G,L,E,COUT,OFLOW} <= 6'b000000;
                     end else ERR <= 1'b1;
                 end
-                4'd11: begin
+                4'd11: begin //OPB<<1
                     if(VALID_TEMP[1]) begin
                         RES[N-1:0] <= OPB_TEMP << 1;
                         {ERR,G,L,E,COUT,OFLOW} <= 6'b000000;
                     end else ERR <= 1'b1;
                 end
-                4'd12: begin
+                4'd12: begin //ROTATE LEFT
                     if (VALID_TEMP == 2'b11) begin
                         RES[N-1:0] <= (OPA_TEMP << OPB_TEMP[2:0]) | (OPA_TEMP >> (N - OPB_TEMP[2:0]));
                         ERR <= (|OPB_TEMP[7:4]);
                         {OFLOW, COUT, G, L, E} <= 5'b00000;
                     end else ERR <= 1'b1;
                 end
-                4'd13: begin
+                4'd13: begin //ROTATE RIGHT
                     if (VALID_TEMP == 2'b11) begin
                         RES[N-1:0] <= (OPA_TEMP >> OPB_TEMP[2:0]) | (OPA_TEMP << (N - OPB_TEMP[2:0]));
                         ERR <= (|OPB_TEMP[7:4]);
@@ -263,13 +263,13 @@ always @(posedge CLK or posedge RST) begin
     end 
     if (count == 2) begin
         if (MODE_TEMP) begin
-            if (CMD_TEMP == 4'd9) begin
+            if (CMD_TEMP == 4'd9) begin //INC_MULTIFICATION
                 if (VALID_TEMP == 2'b11) begin
                     RES <= (OPA_TEMP + 1'b1) * (OPB_TEMP + 1'b1);
                     {ERR, OFLOW, COUT, G, L, E} <= 6'b000000;
                 end else ERR <= 1'b1;
             end
-            else if (CMD_TEMP == 4'd10) begin
+            else if (CMD_TEMP == 4'd10) begin //SHIFT_MULTIFICATION
                 if (VALID_TEMP == 2'b11) begin
                     RES <= (OPA_TEMP << 1'b1) * (OPB_TEMP);
                     {ERR, OFLOW, COUT, G, L, E} <= 6'b000000;
